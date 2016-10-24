@@ -44,8 +44,9 @@ dirFileSpaces days path = do
         "find " ++ path ++ " -type f -mtime +" ++ (show days) ++ " -printf '%s\t%p\n'"
   output <- bracket
             (do
-                (_, Just hOut, _, _) <- createProcess
+                (_, Just hOut, _, p) <- createProcess
                                         (shell fileSpaceCmdStr) { std_out = CreatePipe }
+                waitForProcess p
                 return hOut
             )
             hClose
