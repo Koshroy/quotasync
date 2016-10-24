@@ -42,8 +42,14 @@ dirFileSpaces days path = do
   -- >= n days ago. Print the file lists out in format "fileSize\tfileName\n"
   let fileSpaceCmdStr =
         "find " ++ path ++ " -type f -mtime +" ++ (show days) ++ " -printf '%s\t%p\n'"
-  (_, Just hOut, _, _) <- createProcess (shell fileSpaceCmdStr) { std_out = CreatePipe }
-  output <- hGetContents hOut
+  output <- bracket
+            (do
+                (_, Just hOut, _, _) <- createProcess
+                                        (shell fileSpaceCmdStr) { std_out = CreatePipe }
+                return hOut
+            )
+            hClose
+            hGetContents
   let lineSplitOutputLines = fmap (\l -> splitElem '\t' (l :: Text)) (lines output)
   let tuplizedLSOL = fmap (\lst ->
                              let firstLst = case headMay lst of
