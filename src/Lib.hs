@@ -103,11 +103,11 @@ filesToDelete dFspaces wantedAvailPercent availSpace totalSpace canDeleteFunc =
                             (availSpace + size fspace) totalSpace canDeleteFunc)
 
 
-deleteFunc :: Text -> Text -> Text -> Integer -> IO [FileSpace]
-deleteFunc fileDir apiKey folderId port = do
+deleteFunc :: Text -> Text -> Text -> Integer -> Integer -> IO [FileSpace]
+deleteFunc fileDir apiKey folderId port days = do
   percentage <- diskUsedPercentage "/"
   usage <- getDiskUsage "/"
-  fsps <- dirFileSpaces 7 (unpack fileDir)
+  fsps <- dirFileSpaces days (unpack fileDir)
   let apiKeyHeader = CI.mk $ asByteString $ encodeUtf8 "X-API-Key"
   let reqOpts =
         defaults
@@ -121,10 +121,10 @@ deleteFunc fileDir apiKey folderId port = do
         ^.. key "progress" . _Array . traverse . to (\n -> n^? key "file") . _Just . _String
   let queuedFiles = response
         ^. responseBody
-        ^.. key "progress" . _Array . traverse . to (\n -> n^? key "file") . _Just . _String
+        ^.. key "queued" . _Array . traverse . to (\n -> n^? key "file") . _Just . _String
   let restFiles = response
         ^. responseBody
-        ^.. key "progress" . _Array . traverse . to (\n -> n^? key "file") . _Just . _String
+        ^.. key "rest" . _Array . traverse . to (\n -> n^? key "file") . _Just . _String
   let allUnsafeFiles = concat [progressFiles, queuedFiles, restFiles]
   let deletableFiles =
         filesToDelete (sortedFileSpaces fsps) 0.4

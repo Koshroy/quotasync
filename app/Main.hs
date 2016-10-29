@@ -13,6 +13,7 @@ data QuotaSyncArgs = QuotaSyncArgs
   , apiKey :: String
   , folderId :: String
   , port :: Integer
+  , days :: Integer
   } deriving (Show)
 
 argParser :: Parser QuotaSyncArgs
@@ -29,6 +30,10 @@ argParser = QuotaSyncArgs
   <*> option auto
       ( long "port"
      OA.<> short 'p' )
+  <*> option auto
+      ( long "days"
+     OA.<> short 'd'
+     OA.<> value 7 )
 
 removeFilePrintStatus :: FilePath -> IO ()
 removeFilePrintStatus path = do
@@ -40,7 +45,7 @@ main :: IO ()
 main = do
   conf <- execParser (info argParser fullDesc)
   fs <- deleteFunc
-    (pack $ mediaDir conf) (pack $ apiKey conf) (pack $ folderId conf) (port conf)
+    (pack $ mediaDir conf) (pack $ apiKey conf) (pack $ folderId conf) (port conf) (days conf)
   case null fs of
     True -> return ()
     False -> putStrLn $ ("Deleting files: " ++ (tshow $ (map tshow fs)))
