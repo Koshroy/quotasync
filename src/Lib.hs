@@ -51,7 +51,7 @@ dirFileSpaces days path = do
             )
             hClose
             hGetContents
-  let lineSplitOutputLines = fmap (\l -> splitElem '\t' (l :: Text)) (lines output)
+  let lineSplitOutputLines = fmap (\l -> splitElem '\t' (asText l)) (lines output)
   let tuplizedLSOL = fmap (\lst ->
                              let firstLst = case headMay lst of
                                    Just s -> s
